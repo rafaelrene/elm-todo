@@ -1,0 +1,17 @@
+{
+  "name": "elm-todo-cea",
+  "version": "0.1.0",
+  "description": "This project is bootstrapped with [Create Elm App](https://github.com/halfzebra/create-elm-app).",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "elm-app build"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "create-elm-app": "^5.22.0"
+  }
+}
