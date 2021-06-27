@@ -4,7 +4,7 @@ import Browser
 import Html exposing (Html, button, div, h1, img, text)
 import Html.Attributes exposing (src)
 import Html.Events exposing (onClick)
-import Todo as Todo exposing (Msg(..), Todo, TodoStatus(..), view)
+import Todo as Todo exposing (Model, Msg(..), Todo, TodoStatus(..), initialModel, view)
 
 
 
@@ -12,13 +12,12 @@ import Todo as Todo exposing (Msg(..), Todo, TodoStatus(..), view)
 
 
 type alias Model =
-    { todoList : List Todo
-    }
+    { todoList : Todo.Model }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { todoList = [] }, Cmd.none )
+    ( { todoList = Todo.initialModel }, Cmd.none )
 
 
 
@@ -27,7 +26,7 @@ init =
 
 type Msg
     = NoOp
-    | TodoMsg Todo.Msg
+    | GotTodoMsg Todo.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -36,12 +35,12 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        TodoMsg todoMsg ->
+        GotTodoMsg todoMsg ->
             let
-                todo =
-                    Todo.update todoMsg
+                todoList =
+                    Todo.update todoMsg model.todoList
             in
-            ( { model | todoList = todo :: model.todoList }, Cmd.none )
+            ( { model | todoList = todoList }, Cmd.none )
 
 
 
@@ -50,14 +49,10 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    let
-        todoView =
-            Todo.view "Something" |> Html.map (\msg -> TodoMsg msg)
-    in
     div []
         [ img [ src "/logo.svg" ] []
         , h1 [] [ text "Your Elm App is working!" ]
-        , todoView
+        , Todo.view model.todoList GotTodoMsg
         ]
 
 
