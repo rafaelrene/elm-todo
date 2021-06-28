@@ -1,26 +1,49 @@
-/*
-  elm-hot creates an additional div wrapper around the app to make HMR possible.
-  This could break styling in development mode if you are using Elm UI.
+@import "scss/variables";
 
-  More context in the issue:
-    https://github.com/halfzebra/create-elm-app/issues/320
+/*
+elm-hot creates an additional div wrapper around the app to make HMR possible.
+This could break styling in development mode if you are using Elm UI.
+
+More context in the issue:
+  https://github.com/halfzebra/create-elm-app/issues/320
 */
 [data-elm-hot="true"] {
   height: inherit;
 }
 
 body {
-  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
-  margin: 0;
+  background: $white;
+}
+
+.wrapper {
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  width: 550px;
+}
+
+.heading {
+  color: rgba(175, 47, 47, 0.15);
+  font-size: 100px;
+  font-weight: 400;
   text-align: center;
-  color: #293c4b;
+  text-rendering: optimizeLegibility;
 }
 
-h1 {
-  font-size: 30px;
+.todo-list {
+  background-color: #fff;
+  box-shadow: 0 2px 4px 0 rgba(#000, 0.2), 0 25px 50px 0 rgba(#000, 0.1);
 }
 
-img {
-  margin: 20px 0;
-  max-width: 200px;
+.footer {
+  color: #bfbfbf;
+  font-size: 10px;
+  margin: 65px auto 0;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba(#fff, 0.5);
+
+  &__paragraph {
+    margin: 0;
+  }
 }

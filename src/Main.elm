@@ -1,9 +1,9 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, button, div, h1, img, text)
-import Html.Attributes exposing (src)
-import Html.Events exposing (onClick)
+import Html as Html exposing (..)
+import Html.Attributes as Attributes exposing (..)
+import Html.Events as Events exposing (..)
 import Todo as Todo exposing (Model, Msg(..), Todo, TodoStatus(..), initialModel, view)
 
 
@@ -25,16 +25,12 @@ init =
 
 
 type Msg
-    = NoOp
-    | GotTodoMsg Todo.Msg
+    = GotTodoMsg Todo.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
         GotTodoMsg todoMsg ->
             let
                 todoList =
@@ -49,10 +45,13 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img [ src "/logo.svg" ] []
-        , h1 [] [ text "Your Elm App is working!" ]
-        , Todo.view model.todoList GotTodoMsg
+    Html.div [ Attributes.class "wrapper" ]
+        [ Html.h1 [ Attributes.class "heading" ] [ Html.text "todos" ]
+        , Html.main_ [ Attributes.class "todo-list" ] [ Html.text "todo-list" ]
+        , Html.footer [ Attributes.class "footer" ]
+            [ Html.p [ Attributes.class "footer__paragraph" ] [ Html.text "Double-click to edit todo" ]
+            , Html.p [ Attributes.class "footer__paragraph" ] [ Html.text "Written by René Rafael" ]
+            ]
         ]
 
 
