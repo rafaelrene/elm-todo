@@ -12,12 +12,12 @@ import Todo as Todo exposing (Model, Msg(..), Todo, TodoStatus(..), initialModel
 
 
 type alias Model =
-    { todoList : Todo.Model }
+    { todo : Todo.Model }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { todoList = Todo.initialModel }, Cmd.none )
+    ( { todo = Todo.initialModel }, Cmd.none )
 
 
 
@@ -33,10 +33,10 @@ update msg model =
     case msg of
         GotTodoMsg todoMsg ->
             let
-                todoList =
-                    Todo.update todoMsg model.todoList
+                todo =
+                    Todo.update todoMsg model.todo
             in
-            ( { model | todoList = todoList }, Cmd.none )
+            ( { model | todo = todo }, Cmd.none )
 
 
 
@@ -47,7 +47,7 @@ view : Model -> Html Msg
 view model =
     Html.div [ Attributes.class "wrapper" ]
         [ Html.h1 [ Attributes.class "heading" ] [ Html.text "todos" ]
-        , Html.main_ [ Attributes.class "todo-list" ] [ Html.text "todo-list" ]
+        , Todo.view model.todo GotTodoMsg
         , Html.footer [ Attributes.class "footer" ]
             [ Html.p [ Attributes.class "footer__paragraph" ] [ Html.text "Double-click to edit todo" ]
             , Html.p [ Attributes.class "footer__paragraph" ] [ Html.text "Written by René Rafael" ]

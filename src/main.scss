@@ -12,7 +12,7 @@ More context in the issue:
 }
 
 body {
-  background: $white;
+  background: $almost-white;
 }
 
 .wrapper {
@@ -34,6 +34,52 @@ body {
 .todo-list {
   background-color: #fff;
   box-shadow: 0 2px 4px 0 rgba(#000, 0.2), 0 25px 50px 0 rgba(#000, 0.1);
+}
+
+.add-todo {
+  align-items: center;
+  color: $dark-grey;
+  display: flex;
+  height: 60px;
+
+  &__checkbox {
+    appearance: none;
+    border: 0;
+    color: $grey;
+    cursor: pointer;
+    height: 60px;
+    margin: 0;
+    outline: none;
+    padding: 0;
+    position: relative;
+    width: 60px;
+
+    &:checked {
+      color: $dark-grey;
+    }
+
+    &:before {
+      content: "^";
+      font-size: 40px;
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(180deg);
+    }
+  }
+
+  &__input {
+    appearance: none;
+    border: 0;
+    flex-grow: 1;
+    font-size: 24px;
+    height: 60px;
+    outline: none;
+
+    &::placeholder {
+      color: $grey;
+    }
+  }
 }
 
 .footer {

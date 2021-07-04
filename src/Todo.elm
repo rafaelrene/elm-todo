@@ -54,31 +54,24 @@ update msg model =
 
 view : Model -> (Msg -> mainMsg) -> Html mainMsg
 view model mainMsg =
-    Html.div [] (viewAddTodo model :: List.map viewTodo model.todoList)
+    Html.main_ [ Attributes.class "todo-list" ] [ viewAddTodo model ]
         |> Html.map (\msg -> mainMsg msg)
 
 
-viewTodo todo =
-    let
-        isDone =
-            if todo.status == CLOSED then
-                "true"
-
-            else
-                "false"
-    in
-    Html.div
-        [ Attributes.attribute "data-is-closed" isDone
-        , Attributes.attribute "data-id" todo.id
-        ]
-        [ Html.text todo.label ]
-
-
 viewAddTodo model =
-    Html.div []
-        [ Html.button
-            [ Events.onClick <| CreateTodo "Something" ]
-            [ Html.text "Add Todo" ]
+    Html.section [ Attributes.class "add-todo" ]
+        [ Html.input
+            [ Attributes.type_ "checkbox"
+            , Attributes.class "add-todo__checkbox"
+            ]
+            []
+        , Html.input
+            [ Attributes.type_ "text"
+            , Attributes.class "add-todo__input"
+            , Attributes.placeholder "What needs to be done?"
+            , Attributes.autofocus True
+            ]
+            []
         ]
 
 
