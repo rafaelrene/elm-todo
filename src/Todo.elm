@@ -3,6 +3,7 @@ module Todo exposing (Model, Msg(..), Todo, TodoStatus(..), initialModel, update
 import Html as Html exposing (..)
 import Html.Attributes as Attributes exposing (..)
 import Html.Events as Events exposing (..)
+import Json.Decode as Json
 import Random as Random exposing (initialSeed, step)
 import UUID exposing (Seeds, UUID)
 
@@ -23,22 +24,28 @@ type alias Todo =
 type alias Model =
     { todoList : List Todo
     , seed : Random.Seed
+    , addTodoText : String
     }
 
 
 type Msg
-    = CreateTodo String
+    = UpdateAddTodoText String
+    | CreateTodo Int
 
 
 initialModel : Model
 initialModel =
-    { todoList = [], seed = Random.initialSeed 0 }
+    { todoList = [], seed = Random.initialSeed 0, addTodoText = "" }
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        CreateTodo label ->
+        UpdateAddTodoText currentAddTodoText ->
+            { model | addTodoText = currentAddTodoText }
+
+        -- ENTER KEY CODE
+        CreateTodo 13 ->
             let
                 ( id, newSeed ) =
                     Random.step UUID.generator model.seed
@@ -46,19 +53,30 @@ update msg model =
                 idAsString =
                     UUID.toString id
 
-                todo =
-                    Todo idAsString label OPEN
+                todoList =
+                    if String.length model.addTodoText > 0 then
+                        Todo idAsString model.addTodoText OPEN :: model.todoList
+
+                    else
+                        model.todoList
             in
-            { model | todoList = todo :: model.todoList, seed = newSeed }
+            { model | todoList = todoList, seed = newSeed, addTodoText = "" }
+
+        CreateTodo _ ->
+            model
+
+
+
+---- VIEWS ----
 
 
 view : Model -> (Msg -> mainMsg) -> Html mainMsg
 view model mainMsg =
-    Html.main_ [ Attributes.class "todo-list" ] [ viewAddTodo model ]
+    Html.main_ [ Attributes.class "todo-list-wrapper" ] [ viewAddTodo model.addTodoText, viewTodoList model.todoList ]
         |> Html.map (\msg -> mainMsg msg)
 
 
-viewAddTodo model =
+viewAddTodo addTodoText =
     Html.section [ Attributes.class "add-todo" ]
         [ Html.input
             [ Attributes.type_ "checkbox"
@@ -70,31 +88,33 @@ viewAddTodo model =
             , Attributes.class "add-todo__input"
             , Attributes.placeholder "What needs to be done?"
             , Attributes.autofocus True
+            , Attributes.value addTodoText
+            , Events.onInput UpdateAddTodoText
+            , onKeyDown CreateTodo
             ]
             []
         ]
 
 
-setTodoLabel : String -> Todo -> Todo
-setTodoLabel newLabel todo =
-    { todo | label = newLabel }
+viewTodoList todoList =
+    List.map viewTodo todoList |> Html.ul [ Attributes.class "todo-list" ]
 
 
-updateTodoStatus : TodoStatus -> Todo -> Todo
-updateTodoStatus newStatus todo =
-    { todo | status = newStatus }
+viewTodo todo =
+    Html.li
+        [ Attributes.class "todo-list-item"
+        , Attributes.attribute "data-id" todo.id
+        ]
+        [ Html.input [ Attributes.type_ "checkbox", Attributes.class "todo-list-item__checkbox" ] []
+        , Html.div [ Attributes.class "todo-list-item__label" ] [ Html.text todo.label ]
+        , Html.button [ Attributes.class "todo-list-item__destroy" ] [ Html.text "X" ]
+        ]
 
 
-openTodo : Todo -> Todo
-openTodo =
-    updateTodoStatus OPEN
+
+---- CUSTOM EVENTS ----
 
 
-editTodo : String -> Todo -> Todo
-editTodo editLabel =
-    updateTodoStatus (EDITING editLabel)
-
-
-closeTodo : Todo -> Todo
-closeTodo =
-    updateTodoStatus CLOSED
+onKeyDown : (Int -> Msg) -> Attribute Msg
+onKeyDown tagger =
+    Json.map tagger Events.keyCode |> Events.on "keydown"

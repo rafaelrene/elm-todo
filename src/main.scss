@@ -31,7 +31,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-.todo-list {
+.todo-list-wrapper {
   background-color: #fff;
   box-shadow: 0 2px 4px 0 rgba(#000, 0.2), 0 25px 50px 0 rgba(#000, 0.1);
 }
@@ -79,6 +79,49 @@ body {
     &::placeholder {
       color: $grey;
     }
+  }
+}
+
+.todo-list {
+  margin: 0;
+  padding: 0;
+}
+
+.todo-list-item {
+  align-items: center;
+  border-bottom: 1px solid $grey;
+  display: flex;
+  height: 60px;
+
+  &__checkbox {
+    appearance: none;
+    border-radius: 50%;
+    border: 1px solid $grey;
+    cursor: pointer;
+    height: 30px;
+    margin: 0 20px 0 10px;
+    outline: none;
+    position: relative;
+    width: 30px;
+
+    &:checked {
+      border-color: $green;
+      color: $green;
+
+      &:before {
+        content: "✓";
+        font-size: 16px;
+        left: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+
+  &__label {
+    flex-grow: 1;
+    font-size: 24px;
   }
 }
 
