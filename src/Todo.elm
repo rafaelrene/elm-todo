@@ -31,6 +31,7 @@ type alias Model =
 type Msg
     = UpdateAddTodoText String
     | CreateTodo Int
+    | UpdateTodoStatus String Bool
 
 
 initialModel : Model
@@ -64,6 +65,28 @@ update msg model =
 
         CreateTodo _ ->
             model
+
+        UpdateTodoStatus idTodo isClosed ->
+            let
+                currentStatus =
+                    if isClosed == True then
+                        CLOSED
+
+                    else
+                        OPEN
+
+                todoList =
+                    List.map
+                        (\todo ->
+                            if todo.id == idTodo then
+                                { todo | status = currentStatus }
+
+                            else
+                                todo
+                        )
+                        model.todoList
+            in
+            { model | todoList = todoList }
 
 
 
@@ -101,13 +124,41 @@ viewTodoList todoList =
 
 
 viewTodo todo =
+    let
+        classModifier =
+            case todo.status of
+                OPEN ->
+                    "open"
+
+                EDITING _ ->
+                    "editing"
+
+                CLOSED ->
+                    "closed"
+    in
     Html.li
         [ Attributes.class "todo-list-item"
+        , Attributes.class <| "todo-list-item--" ++ classModifier
         , Attributes.attribute "data-id" todo.id
         ]
-        [ Html.input [ Attributes.type_ "checkbox", Attributes.class "todo-list-item__checkbox" ] []
-        , Html.div [ Attributes.class "todo-list-item__label" ] [ Html.text todo.label ]
-        , Html.button [ Attributes.class "todo-list-item__destroy" ] [ Html.text "X" ]
+        [ Html.input
+            [ Attributes.type_ "checkbox"
+            , Attributes.class "todo-list-item__checkbox"
+            , Attributes.class <| "todo-list-item__checkbox--" ++ classModifier
+            , Attributes.checked <| todo.status == CLOSED
+            , Events.onCheck <| UpdateTodoStatus todo.id
+            ]
+            []
+        , Html.div
+            [ Attributes.class "todo-list-item__label"
+            , Attributes.class <| "todo-list-item__label--" ++ classModifier
+            ]
+            [ Html.text todo.label ]
+        , Html.button
+            [ Attributes.class "todo-list-item__destroy"
+            , Attributes.class <| "todo-list-item__destroy--" ++ classModifier
+            ]
+            [ Html.text "X" ]
         ]
 
 

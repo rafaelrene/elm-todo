@@ -122,6 +122,11 @@ body {
   &__label {
     flex-grow: 1;
     font-size: 24px;
+
+    &--closed {
+      color: $grey;
+      text-decoration: line-through;
+    }
   }
 
   &__destroy {
@@ -146,7 +151,7 @@ body {
   font-size: 10px;
   margin: 65px auto 0;
   text-align: center;
-  text-shadow: 0 1px 0 rgba(#fff, 0.5);
+  text-shadow: 0 1px 0 rgba($white, 0.5);
 
   &__paragraph {
     margin: 0;
