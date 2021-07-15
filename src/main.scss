@@ -24,7 +24,7 @@ body {
 }
 
 .heading {
-  color: rgba(175, 47, 47, 0.15);
+  color: rgba($beige, 0.15);
   font-size: 100px;
   font-weight: 400;
   text-align: center;
@@ -122,6 +122,22 @@ body {
   &__label {
     flex-grow: 1;
     font-size: 24px;
+  }
+
+  &__destroy {
+    appearance: none;
+    border: none;
+    color: $beige;
+    height: 40px;
+    outline: none;
+    width: 40px;
+    opacity: 0;
+  }
+
+  &:hover {
+    .todo-list-item__destroy {
+      opacity: 1;
+    }
   }
 }
 
