@@ -32,6 +32,7 @@ type Msg
     = UpdateAddTodoText String
     | CreateTodo Int
     | UpdateTodoStatus String Bool
+    | UpdateAllTodoStatuses Bool
 
 
 initialModel : Model
@@ -88,6 +89,20 @@ update msg model =
             in
             { model | todoList = todoList }
 
+        UpdateAllTodoStatuses isChecked ->
+            let
+                currentStatus =
+                    if isChecked == True then
+                        CLOSED
+
+                    else
+                        OPEN
+
+                todoList =
+                    List.map (\todo -> { todo | status = currentStatus }) model.todoList
+            in
+            { model | todoList = todoList }
+
 
 
 ---- VIEWS ----
@@ -95,15 +110,34 @@ update msg model =
 
 view : Model -> (Msg -> mainMsg) -> Html mainMsg
 view model mainMsg =
-    Html.main_ [ Attributes.class "todo-list-wrapper" ] [ viewAddTodo model.addTodoText, viewTodoList model.todoList ]
+    Html.main_ [ Attributes.class "todo-list-wrapper" ]
+        [ viewAddTodo model.addTodoText model.todoList
+        , viewTodoList model.todoList
+        ]
         |> Html.map (\msg -> mainMsg msg)
 
 
-viewAddTodo addTodoText =
+viewAddTodo addTodoText todoList =
+    let
+        areAllTodosClosed =
+            List.length todoList
+                > 0
+                && List.all (\todo -> todo.status == CLOSED) todoList
+
+        checkboxCheckedClass =
+            if areAllTodosClosed == True then
+                "add-todo__checkbox--checked"
+
+            else
+                ""
+    in
     Html.section [ Attributes.class "add-todo" ]
         [ Html.input
             [ Attributes.type_ "checkbox"
             , Attributes.class "add-todo__checkbox"
+            , Attributes.class checkboxCheckedClass
+            , Attributes.checked areAllTodosClosed
+            , Events.onCheck UpdateAllTodoStatuses
             ]
             []
         , Html.input
