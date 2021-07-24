@@ -33,6 +33,7 @@ type Msg
     | CreateTodo Int
     | UpdateTodoStatus String Bool
     | UpdateAllTodoStatuses Bool
+    | DeleteTodo String
 
 
 initialModel : Model
@@ -100,6 +101,13 @@ update msg model =
 
                 todoList =
                     List.map (\todo -> { todo | status = currentStatus }) model.todoList
+            in
+            { model | todoList = todoList }
+
+        DeleteTodo idTodo ->
+            let
+                todoList =
+                    List.filter (\todo -> todo.id /= idTodo) model.todoList
             in
             { model | todoList = todoList }
 
@@ -191,6 +199,7 @@ viewTodo todo =
         , Html.button
             [ Attributes.class "todo-list-item__destroy"
             , Attributes.class <| "todo-list-item__destroy--" ++ classModifier
+            , Events.onClick <| DeleteTodo todo.id
             ]
             [ Html.text "X" ]
         ]
