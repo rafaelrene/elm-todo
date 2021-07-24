@@ -33,10 +33,13 @@ update msg model =
     case msg of
         GotTodoMsg todoMsg ->
             let
-                todo =
+                ( todo, command ) =
                     Todo.update todoMsg model.todo
+
+                mainCommand =
+                    Cmd.map GotTodoMsg command
             in
-            ( { model | todo = todo }, Cmd.none )
+            ( { model | todo = todo }, mainCommand )
 
 
 

@@ -1,5 +1,18 @@
 @import "scss/variables";
 
+%input {
+  appearance: none;
+  border: 0;
+  flex-grow: 1;
+  font-size: 24px;
+  height: 60px;
+  outline: none;
+
+  &::placeholder {
+    color: $grey;
+  }
+}
+
 /*
 elm-hot creates an additional div wrapper around the app to make HMR possible.
 This could break styling in development mode if you are using Elm UI.
@@ -69,16 +82,7 @@ body {
   }
 
   &__input {
-    appearance: none;
-    border: 0;
-    flex-grow: 1;
-    font-size: 24px;
-    height: 60px;
-    outline: none;
-
-    &::placeholder {
-      color: $grey;
-    }
+    @extend %input;
   }
 }
 
@@ -143,6 +147,10 @@ body {
     .todo-list-item__destroy {
       opacity: 1;
     }
+  }
+
+  &__editing-input {
+    @extend %input;
   }
 }
 

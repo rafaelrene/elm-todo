@@ -5,6 +5,7 @@ import Html.Attributes as Attributes exposing (..)
 import Html.Events as Events exposing (..)
 import Json.Decode as Json
 import Random as Random exposing (initialSeed, step)
+import Task
 import UUID exposing (Seeds, UUID)
 
 
@@ -31,7 +32,7 @@ type alias Model =
 type Msg
     = UpdateAddTodoText String
     | CreateTodo Int
-    | UpdateTodoStatus String Bool
+    | UpdateTodoStatus String (Maybe String) Bool
     | UpdateAllTodoStatuses Bool
     | DeleteTodo String
 
@@ -41,11 +42,11 @@ initialModel =
     { todoList = [], seed = Random.initialSeed 0, addTodoText = "" }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateAddTodoText currentAddTodoText ->
-            { model | addTodoText = currentAddTodoText }
+            ( { model | addTodoText = currentAddTodoText }, Cmd.none )
 
         -- ENTER KEY CODE
         CreateTodo 13 ->
@@ -63,12 +64,12 @@ update msg model =
                     else
                         model.todoList
             in
-            { model | todoList = todoList, seed = newSeed, addTodoText = "" }
+            ( { model | todoList = todoList, seed = newSeed, addTodoText = "" }, Cmd.none )
 
         CreateTodo _ ->
-            model
+            ( model, Cmd.none )
 
-        UpdateTodoStatus idTodo isClosed ->
+        UpdateTodoStatus idTodo Nothing isClosed ->
             let
                 currentStatus =
                     if isClosed == True then
@@ -88,7 +89,22 @@ update msg model =
                         )
                         model.todoList
             in
-            { model | todoList = todoList }
+            ( { model | todoList = todoList }, Cmd.none )
+
+        UpdateTodoStatus idTodo (Just editingString) _ ->
+            let
+                todoList =
+                    List.map
+                        (\todo ->
+                            if todo.id /= idTodo then
+                                todo
+
+                            else
+                                { todo | status = EDITING editingString }
+                        )
+                        model.todoList
+            in
+            ( { model | todoList = todoList }, Cmd.none )
 
         UpdateAllTodoStatuses isChecked ->
             let
@@ -102,14 +118,14 @@ update msg model =
                 todoList =
                     List.map (\todo -> { todo | status = currentStatus }) model.todoList
             in
-            { model | todoList = todoList }
+            ( { model | todoList = todoList }, Cmd.none )
 
         DeleteTodo idTodo ->
             let
                 todoList =
                     List.filter (\todo -> todo.id /= idTodo) model.todoList
             in
-            { model | todoList = todoList }
+            ( { model | todoList = todoList }, Cmd.none )
 
 
 
@@ -177,6 +193,17 @@ viewTodo todo =
 
                 CLOSED ->
                     "closed"
+
+        isEditing =
+            case todo.status of
+                OPEN ->
+                    False
+
+                EDITING _ ->
+                    True
+
+                CLOSED ->
+                    False
     in
     Html.li
         [ Attributes.class "todo-list-item"
@@ -188,20 +215,34 @@ viewTodo todo =
             , Attributes.class "todo-list-item__checkbox"
             , Attributes.class <| "todo-list-item__checkbox--" ++ classModifier
             , Attributes.checked <| todo.status == CLOSED
-            , Events.onCheck <| UpdateTodoStatus todo.id
+            , Events.onCheck <| UpdateTodoStatus todo.id Nothing
             ]
             []
+            |> when (isEditing == False)
         , Html.div
             [ Attributes.class "todo-list-item__label"
             , Attributes.class <| "todo-list-item__label--" ++ classModifier
+            , Events.onDoubleClick <| UpdateTodoStatus todo.id (Just todo.label) False
             ]
             [ Html.text todo.label ]
+            |> when (isEditing == False)
         , Html.button
             [ Attributes.class "todo-list-item__destroy"
             , Attributes.class <| "todo-list-item__destroy--" ++ classModifier
             , Events.onClick <| DeleteTodo todo.id
             ]
             [ Html.text "X" ]
+            |> when (isEditing == False)
+
+        ---- IS EDITING!!! ----
+        , Html.input
+            [ Attributes.class "todo-list-item__editing-input"
+            , Attributes.class <| "todo-list-item__editing-input--" ++ classModifier
+            , Attributes.value todo.label
+            , Attributes.id <| "editing/" ++ todo.id
+            ]
+            []
+            |> when isEditing
         ]
 
 
@@ -212,3 +253,21 @@ viewTodo todo =
 onKeyDown : (Int -> Msg) -> Attribute Msg
 onKeyDown tagger =
     Json.map tagger Events.keyCode |> Events.on "keydown"
+
+
+
+---- Helper functions ----
+
+
+empty : Html msg
+empty =
+    Html.text ""
+
+
+when : Bool -> Html msg -> Html msg
+when shouldRender html =
+    if shouldRender then
+        html
+
+    else
+        empty
