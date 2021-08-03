@@ -1,5 +1,6 @@
 module Todo exposing (Model, Msg(..), Todo, TodoStatus(..), initialModel, update, view)
 
+import Browser.Dom as Dom exposing (Error, focus)
 import Html as Html exposing (..)
 import Html.Attributes as Attributes exposing (..)
 import Html.Events as Events exposing (..)
@@ -11,7 +12,7 @@ import UUID exposing (Seeds, UUID)
 
 type TodoStatus
     = OPEN
-    | EDITING String
+    | EDITING TodoStatus String
     | CLOSED
 
 
@@ -30,11 +31,14 @@ type alias Model =
 
 
 type Msg
-    = UpdateAddTodoText String
+    = NoOp
+    | UpdateAddTodoText String
     | CreateTodo Int
     | UpdateTodoStatus String (Maybe String) Bool
     | UpdateAllTodoStatuses Bool
     | DeleteTodo String
+    | UpdateEditingLabel String String
+    | FinishEditingLabel String Int
 
 
 initialModel : Model
@@ -45,6 +49,9 @@ initialModel =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         UpdateAddTodoText currentAddTodoText ->
             ( { model | addTodoText = currentAddTodoText }, Cmd.none )
 
@@ -100,11 +107,11 @@ update msg model =
                                 todo
 
                             else
-                                { todo | status = EDITING editingString }
+                                { todo | status = EDITING todo.status editingString }
                         )
                         model.todoList
             in
-            ( { model | todoList = todoList }, Cmd.none )
+            ( { model | todoList = todoList }, Dom.focus ("editing/" ++ idTodo) |> Task.attempt (\_ -> NoOp) )
 
         UpdateAllTodoStatuses isChecked ->
             let
@@ -126,6 +133,78 @@ update msg model =
                     List.filter (\todo -> todo.id /= idTodo) model.todoList
             in
             ( { model | todoList = todoList }, Cmd.none )
+
+        UpdateEditingLabel idTodo newEditingString ->
+            let
+                todoList =
+                    List.map
+                        (\todo ->
+                            if todo.id == idTodo then
+                                case todo.status of
+                                    OPEN ->
+                                        todo
+
+                                    EDITING previousStatus _ ->
+                                        { todo | status = EDITING previousStatus newEditingString }
+
+                                    CLOSED ->
+                                        todo
+
+                            else
+                                todo
+                        )
+                        model.todoList
+            in
+            ( { model | todoList = todoList }, Cmd.none )
+
+        FinishEditingLabel idTodo 13 ->
+            let
+                todoList =
+                    List.map
+                        (\todo ->
+                            if todo.id == idTodo then
+                                case todo.status of
+                                    OPEN ->
+                                        todo
+
+                                    EDITING previousStatus newLabel ->
+                                        { todo | label = newLabel, status = previousStatus }
+
+                                    CLOSED ->
+                                        todo
+
+                            else
+                                todo
+                        )
+                        model.todoList
+            in
+            ( { model | todoList = todoList }, Cmd.none )
+
+        FinishEditingLabel idTodo 27 ->
+            let
+                todoList =
+                    List.map
+                        (\todo ->
+                            if todo.id == idTodo then
+                                case todo.status of
+                                    OPEN ->
+                                        todo
+
+                                    EDITING previousStatus _ ->
+                                        { todo | label = todo.label, status = previousStatus }
+
+                                    CLOSED ->
+                                        todo
+
+                            else
+                                todo
+                        )
+                        model.todoList
+            in
+            ( { model | todoList = todoList }, Cmd.none )
+
+        FinishEditingLabel _ _ ->
+            ( model, Cmd.none )
 
 
 
@@ -188,7 +267,7 @@ viewTodo todo =
                 OPEN ->
                     "open"
 
-                EDITING _ ->
+                EDITING _ _ ->
                     "editing"
 
                 CLOSED ->
@@ -199,11 +278,22 @@ viewTodo todo =
                 OPEN ->
                     False
 
-                EDITING _ ->
+                EDITING _ _ ->
                     True
 
                 CLOSED ->
                     False
+
+        editingLabel =
+            case todo.status of
+                OPEN ->
+                    ""
+
+                EDITING _ label ->
+                    label
+
+                CLOSED ->
+                    ""
     in
     Html.li
         [ Attributes.class "todo-list-item"
@@ -218,7 +308,6 @@ viewTodo todo =
             , Events.onCheck <| UpdateTodoStatus todo.id Nothing
             ]
             []
-            |> when (isEditing == False)
         , Html.div
             [ Attributes.class "todo-list-item__label"
             , Attributes.class <| "todo-list-item__label--" ++ classModifier
@@ -238,8 +327,10 @@ viewTodo todo =
         , Html.input
             [ Attributes.class "todo-list-item__editing-input"
             , Attributes.class <| "todo-list-item__editing-input--" ++ classModifier
-            , Attributes.value todo.label
+            , Attributes.value editingLabel
             , Attributes.id <| "editing/" ++ todo.id
+            , Events.onInput <| UpdateEditingLabel todo.id
+            , onKeyDown <| FinishEditingLabel todo.id
             ]
             []
             |> when isEditing
