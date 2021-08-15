@@ -158,6 +158,16 @@ body {
   }
 }
 
+.todo-footer {
+  border-top: 1px solid $almost-white;
+  color: $dark-grey;
+  display: flex;
+  font-size: 14px;
+  height: 40px;
+  justify-content: space-between;
+  padding: 10px 15px;
+}
+
 .footer {
   color: #bfbfbf;
   font-size: 10px;

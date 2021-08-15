@@ -229,6 +229,7 @@ view model mainMsg =
     Html.main_ [ Attributes.class "todo-list-wrapper" ]
         [ viewAddTodo model.addTodoText model.todoList
         , viewTodoList model.todoList
+        , viewTodoFooter model.todoList
         ]
         |> Html.map (\msg -> mainMsg msg)
 
@@ -348,6 +349,29 @@ viewTodo todo =
             []
             |> when isEditing
         ]
+
+
+viewTodoFooter todoList =
+    let
+        todoListLength =
+            List.length todoList
+
+        closedTodoListLength =
+            todoList |> List.filter (\todo -> todo.status == CLOSED) |> List.length
+    in
+    Html.footer
+        [ Attributes.class "todo-footer" ]
+        [ Html.div [] [ todoListLength |> String.fromInt |> Html.text ] -- viewFooterTodoCount
+        , Html.ul [] [ Html.text "filters" ] -- viewFooterFilters
+        , Html.div []
+            -- viewFooterClearButton
+            [ [ "Clear completed (", String.fromInt closedTodoListLength, ")" ]
+                |> String.concat
+                |> Html.text
+                |> when (closedTodoListLength > 0)
+            ]
+        ]
+        |> when (todoListLength > 0)
 
 
 
