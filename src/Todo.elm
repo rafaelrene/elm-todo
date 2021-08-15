@@ -64,9 +64,12 @@ update msg model =
                 idAsString =
                     UUID.toString id
 
+                trimmedAddTodoText =
+                    String.trim model.addTodoText
+
                 todoList =
-                    if String.length model.addTodoText > 0 then
-                        Todo idAsString model.addTodoText OPEN :: model.todoList
+                    if String.length trimmedAddTodoText > 0 then
+                        Todo idAsString trimmedAddTodoText OPEN :: model.todoList
 
                     else
                         model.todoList
@@ -158,29 +161,39 @@ update msg model =
             ( { model | todoList = todoList }, Cmd.none )
 
         FinishEditingLabel idTodo 13 ->
+            -- 13 => ENTER
             let
                 todoList =
-                    List.map
-                        (\todo ->
-                            if todo.id == idTodo then
-                                case todo.status of
-                                    OPEN ->
-                                        todo
+                    model.todoList
+                        |> List.map
+                            (\todo ->
+                                if todo.id == idTodo then
+                                    case todo.status of
+                                        OPEN ->
+                                            todo
 
-                                    EDITING previousStatus newLabel ->
-                                        { todo | label = newLabel, status = previousStatus }
+                                        EDITING previousStatus newLabel ->
+                                            { todo | label = String.trim newLabel, status = previousStatus }
 
-                                    CLOSED ->
-                                        todo
+                                        CLOSED ->
+                                            todo
 
-                            else
-                                todo
-                        )
-                        model.todoList
+                                else
+                                    todo
+                            )
+                        |> List.filter
+                            (\todo ->
+                                if todo.id == idTodo then
+                                    String.length todo.label > 0
+
+                                else
+                                    True
+                            )
             in
             ( { model | todoList = todoList }, Cmd.none )
 
         FinishEditingLabel idTodo 27 ->
+            -- 13 => ESCAPE
             let
                 todoList =
                     List.map
