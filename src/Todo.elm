@@ -10,6 +10,12 @@ import Task
 import UUID exposing (Seeds, UUID)
 
 
+type TodoFilter
+    = ALL
+    | ACTIVE
+    | COMPLETED
+
+
 type TodoStatus
     = OPEN
     | EDITING TodoStatus String
@@ -27,6 +33,7 @@ type alias Model =
     { todoList : List Todo
     , seed : Random.Seed
     , addTodoText : String
+    , activeFilter : TodoFilter
     }
 
 
@@ -39,11 +46,12 @@ type Msg
     | DeleteTodo String
     | UpdateEditingLabel String String
     | FinishEditingLabel String Int
+    | SetActiveFilter TodoFilter
 
 
 initialModel : Model
 initialModel =
-    { todoList = [], seed = Random.initialSeed 0, addTodoText = "" }
+    { todoList = [], seed = Random.initialSeed 0, addTodoText = "", activeFilter = ALL }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -193,7 +201,7 @@ update msg model =
             ( { model | todoList = todoList }, Cmd.none )
 
         FinishEditingLabel idTodo 27 ->
-            -- 13 => ESCAPE
+            -- 27 => ESCAPE
             let
                 todoList =
                     List.map
@@ -219,6 +227,9 @@ update msg model =
         FinishEditingLabel _ _ ->
             ( model, Cmd.none )
 
+        SetActiveFilter filter ->
+            ( { model | activeFilter = filter }, Cmd.none )
+
 
 
 ---- VIEWS ----
@@ -228,8 +239,8 @@ view : Model -> (Msg -> mainMsg) -> Html mainMsg
 view model mainMsg =
     Html.main_ [ Attributes.class "todo-list-wrapper" ]
         [ viewAddTodo model.addTodoText model.todoList
-        , viewTodoList model.todoList
-        , viewTodoFooter model.todoList
+        , viewTodoList model.todoList model.activeFilter
+        , viewTodoFooter model.todoList model.activeFilter
         ]
         |> Html.map (\msg -> mainMsg msg)
 
@@ -270,8 +281,20 @@ viewAddTodo addTodoText todoList =
         ]
 
 
-viewTodoList todoList =
-    List.map viewTodo todoList |> Html.ul [ Attributes.class "todo-list" ]
+viewTodoList todoList activeFilter =
+    let
+        shownTodoList =
+            case activeFilter of
+                ALL ->
+                    todoList
+
+                ACTIVE ->
+                    List.filter (\todo -> todo.status == OPEN) todoList
+
+                COMPLETED ->
+                    List.filter (\todo -> todo.status == CLOSED) todoList
+    in
+    List.map viewTodo shownTodoList |> Html.ul [ Attributes.class "todo-list" ]
 
 
 viewTodo todo =
@@ -351,19 +374,30 @@ viewTodo todo =
         ]
 
 
-viewTodoFooter todoList =
+viewTodoFooter todoList activeFilter =
     let
         todoListLength =
-            List.length todoList
+            todoList |> List.length
 
         closedTodoListLength =
             todoList |> List.filter (\todo -> todo.status == CLOSED) |> List.length
+
+        itemsLeft =
+            [ String.fromInt todoListLength
+            , if todoListLength == 1 then
+                " item "
+
+              else
+                " items "
+            , "left"
+            ]
+                |> String.concat
     in
     Html.footer
         [ Attributes.class "todo-footer" ]
-        [ Html.div [] [ todoListLength |> String.fromInt |> Html.text ] -- viewFooterTodoCount
-        , Html.ul [] [ Html.text "filters" ] -- viewFooterFilters
-        , Html.div []
+        [ Html.div [ Attributes.class "items-left" ] [ itemsLeft |> Html.text ] -- viewFooterTodoCount
+        , viewTodoFooterFilters activeFilter -- viewFooterFilters
+        , Html.div [ Attributes.class "clear-completed" ]
             -- viewFooterClearButton
             [ [ "Clear completed (", String.fromInt closedTodoListLength, ")" ]
                 |> String.concat
@@ -372,6 +406,33 @@ viewTodoFooter todoList =
             ]
         ]
         |> when (todoListLength > 0)
+
+
+viewTodoFooterFilters activeFilter =
+    let
+        filters =
+            [ ( ALL, "All" ), ( ACTIVE, "Active" ), ( COMPLETED, "Completed" ) ]
+                |> List.map (viewTodoFooterFilter activeFilter)
+    in
+    Html.ul [ Attributes.class "filters" ] filters
+
+
+viewTodoFooterFilter activeFilter ( filterType, filterLabel ) =
+    let
+        activeClassName =
+            if activeFilter == filterType then
+                " filters__filter--active"
+
+            else
+                ""
+
+        classNames =
+            [ "filters__filter"
+            , activeClassName
+            ]
+                |> String.concat
+    in
+    Html.li [ Attributes.class classNames, Events.onClick <| SetActiveFilter filterType ] [ Html.text filterLabel ]
 
 
 
@@ -394,7 +455,7 @@ empty =
 
 when : Bool -> Html msg -> Html msg
 when shouldRender html =
-    if shouldRender then
+    if shouldRender == True then
         html
 
     else

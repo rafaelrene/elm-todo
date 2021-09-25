@@ -168,6 +168,36 @@ body {
   padding: 10px 15px;
 }
 
+.items-left {
+  flex-basis: 175px;
+}
+
+.filters {
+  align-items: center;
+  display: flex;
+  flex-grow: 1;
+  justify-content: space-around;
+  margin: 0;
+  padding: 0 15px;
+
+  &__filter {
+    border-radius: 3px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    list-style: none;
+    padding: 0 7px;
+
+    &--active {
+      border-color: rgba($beige, 0.2);
+    }
+  }
+}
+
+.clear-completed {
+  flex-basis: 175px;
+  text-align: right;
+}
+
 .footer {
   color: #bfbfbf;
   font-size: 10px;
