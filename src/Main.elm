@@ -1,8 +1,10 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, div, h1, img, text)
-import Html.Attributes exposing (src)
+import Html as Html exposing (..)
+import Html.Attributes as Attributes exposing (..)
+import Html.Events as Events exposing (..)
+import Todo as Todo exposing (Model, Msg(..), Todo, TodoStatus(..), initialModel, view)
 
 
 
@@ -10,12 +12,12 @@ import Html.Attributes exposing (src)
 
 
 type alias Model =
-    {}
+    { todo : Todo.Model }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( {}, Cmd.none )
+    ( { todo = Todo.initialModel }, Cmd.none )
 
 
 
@@ -23,12 +25,21 @@ init =
 
 
 type Msg
-    = NoOp
+    = GotTodoMsg Todo.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        GotTodoMsg todoMsg ->
+            let
+                ( todo, command ) =
+                    Todo.update todoMsg model.todo
+
+                mainCommand =
+                    Cmd.map GotTodoMsg command
+            in
+            ( { model | todo = todo }, mainCommand )
 
 
 
@@ -37,9 +48,13 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ img [ src "/logo.svg" ] []
-        , h1 [] [ text "Your Elm App is working!" ]
+    Html.div [ Attributes.class "wrapper" ]
+        [ Html.h1 [ Attributes.class "heading" ] [ Html.text "todos" ]
+        , Todo.view model.todo GotTodoMsg
+        , Html.footer [ Attributes.class "footer" ]
+            [ Html.p [ Attributes.class "footer__paragraph" ] [ Html.text "Double-click to edit todo" ]
+            , Html.p [ Attributes.class "footer__paragraph" ] [ Html.text "Written by René Rafael" ]
+            ]
         ]
 
 

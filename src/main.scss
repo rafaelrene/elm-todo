@@ -1,26 +1,211 @@
-/*
-  elm-hot creates an additional div wrapper around the app to make HMR possible.
-  This could break styling in development mode if you are using Elm UI.
+@import "scss/variables";
 
-  More context in the issue:
-    https://github.com/halfzebra/create-elm-app/issues/320
+%input {
+  appearance: none;
+  border: 0;
+  flex-grow: 1;
+  font-size: 24px;
+  height: 60px;
+  outline: none;
+
+  &::placeholder {
+    color: $grey;
+  }
+}
+
+/*
+elm-hot creates an additional div wrapper around the app to make HMR possible.
+This could break styling in development mode if you are using Elm UI.
+
+More context in the issue:
+  https://github.com/halfzebra/create-elm-app/issues/320
 */
 [data-elm-hot="true"] {
   height: inherit;
 }
 
 body {
-  font-family: 'Source Sans Pro', 'Trebuchet MS', 'Lucida Grande', 'Bitstream Vera Sans', 'Helvetica Neue', sans-serif;
-  margin: 0;
+  background: $almost-white;
+}
+
+.wrapper {
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  width: 550px;
+}
+
+.heading {
+  color: rgba($beige, 0.15);
+  font-size: 100px;
+  font-weight: 400;
   text-align: center;
-  color: #293c4b;
+  text-rendering: optimizeLegibility;
 }
 
-h1 {
-  font-size: 30px;
+.todo-list-wrapper {
+  background-color: #fff;
+  box-shadow: 0 2px 4px 0 rgba(#000, 0.2), 0 25px 50px 0 rgba(#000, 0.1);
 }
 
-img {
-  margin: 20px 0;
-  max-width: 200px;
+.add-todo {
+  align-items: center;
+  color: $dark-grey;
+  display: flex;
+  height: 60px;
+
+  &__checkbox {
+    appearance: none;
+    border: 0;
+    color: $grey;
+    cursor: pointer;
+    height: 60px;
+    margin: 0;
+    outline: none;
+    padding: 0;
+    position: relative;
+    width: 60px;
+
+    &:checked {
+      color: $dark-grey;
+    }
+
+    &:before {
+      content: "^";
+      font-size: 40px;
+      left: 50%;
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(180deg);
+    }
+  }
+
+  &__input {
+    @extend %input;
+  }
+}
+
+.todo-list {
+  margin: 0;
+  padding: 0;
+}
+
+.todo-list-item {
+  align-items: center;
+  border-bottom: 1px solid $grey;
+  display: flex;
+  height: 60px;
+
+  &__checkbox {
+    appearance: none;
+    border-radius: 50%;
+    border: 1px solid $grey;
+    cursor: pointer;
+    height: 30px;
+    margin: 0 20px 0 10px;
+    outline: none;
+    position: relative;
+    width: 30px;
+
+    &:checked {
+      border-color: $green;
+      color: $green;
+
+      &:before {
+        content: "✓";
+        font-size: 16px;
+        left: 50%;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    &--editing {
+      visibility: hidden;
+    }
+  }
+
+  &__label {
+    flex-grow: 1;
+    font-size: 24px;
+
+    &--closed {
+      color: $grey;
+      text-decoration: line-through;
+    }
+  }
+
+  &__destroy {
+    appearance: none;
+    border: none;
+    color: $beige;
+    height: 40px;
+    outline: none;
+    width: 40px;
+    opacity: 0;
+  }
+
+  &:hover {
+    .todo-list-item__destroy {
+      opacity: 1;
+    }
+  }
+
+  &__editing-input {
+    @extend %input;
+  }
+}
+
+.todo-footer {
+  border-top: 1px solid $almost-white;
+  color: $dark-grey;
+  display: flex;
+  font-size: 14px;
+  height: 40px;
+  justify-content: space-between;
+  padding: 10px 15px;
+}
+
+.items-left {
+  flex-basis: 175px;
+}
+
+.filters {
+  align-items: center;
+  display: flex;
+  flex-grow: 1;
+  justify-content: space-around;
+  margin: 0;
+  padding: 0 15px;
+
+  &__filter {
+    border-radius: 3px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    list-style: none;
+    padding: 0 7px;
+
+    &--active {
+      border-color: rgba($beige, 0.2);
+    }
+  }
+}
+
+.clear-completed {
+  flex-basis: 175px;
+  text-align: right;
+}
+
+.footer {
+  color: #bfbfbf;
+  font-size: 10px;
+  margin: 65px auto 0;
+  text-align: center;
+  text-shadow: 0 1px 0 rgba($white, 0.5);
+
+  &__paragraph {
+    margin: 0;
+  }
 }
