@@ -47,6 +47,7 @@ type Msg
     | UpdateEditingLabel String String
     | FinishEditingLabel String Int
     | SetActiveFilter TodoFilter
+    | ClearCompleted
 
 
 initialModel : Model
@@ -230,6 +231,22 @@ update msg model =
         SetActiveFilter filter ->
             ( { model | activeFilter = filter }, Cmd.none )
 
+        ClearCompleted ->
+            let
+                todoList =
+                    model.todoList
+                        |> List.filter
+                            (\todo ->
+                                case todo.status of
+                                    CLOSED ->
+                                        False
+
+                                    _ ->
+                                        True
+                            )
+            in
+            ( { model | todoList = todoList }, Cmd.none )
+
 
 
 ---- VIEWS ----
@@ -397,7 +414,10 @@ viewTodoFooter todoList activeFilter =
         [ Attributes.class "todo-footer" ]
         [ Html.div [ Attributes.class "items-left" ] [ itemsLeft |> Html.text ] -- viewFooterTodoCount
         , viewTodoFooterFilters activeFilter -- viewFooterFilters
-        , Html.div [ Attributes.class "clear-completed" ]
+        , Html.div
+            [ Attributes.class "clear-completed"
+            , Events.onClick ClearCompleted
+            ]
             -- viewFooterClearButton
             [ [ "Clear completed (", String.fromInt closedTodoListLength, ")" ]
                 |> String.concat
